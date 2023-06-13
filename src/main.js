@@ -1,21 +1,38 @@
+import { MongoClient } from "mongodb";
 import express from "express";
 const app = express();
 
-function main(req, res) {
-  // return "some message";
-  res.send("some message...!");
+async function main(req, res) {
+  const uri = "mongodb://127.0.0.1:27017";
+  const client = new MongoClient(uri);
+
+  const db = client.db("mydb");
+  const messageColl = db.collection("message");
+
+  let message = req.query.message;
+  let inputDocument = { message: message };
+  await messageColl.insertOne(inputDocument);
+
+  await client.close();
+
+  res.send("record added");
 }
 
-function first(req, res) {
-  // logic...
-  res.send("Success");
+async function findAllMessage(req, res) {
+  const uri = "mongodb://127.0.0.1:27017";
+  const client = new MongoClient(uri);
+
+  const db = client.db("mydb");
+  const messageColl = db.collection("message");
+
+  let list = await messageColl.find().toArray();
+
+  await client.close();
+  res.send(list);
 }
 
-// http://loaclhost:4000/main
 app.get("/main", main);
-
-// http://loaclhost:4000/first
-app.get("/first", first);
+app.get("/find", findAllMessage);
 
 // http://loaclhost:4000
 app.listen(4000);
